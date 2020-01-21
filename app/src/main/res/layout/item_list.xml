@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFFFFF"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_item"
     android:orientation="vertical">
 
     <TextView
@@ -11,8 +12,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
+        android:letterSpacing="0.10"
         android:textAlignment="center"
-        android:textSize="16dp"
+        android:textSize="18sp"
         android:textStyle="bold"
         tools:text="8871784545" />
 

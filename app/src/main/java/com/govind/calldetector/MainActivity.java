@@ -2,10 +2,14 @@ package com.govind.calldetector;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -19,10 +23,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
+    private static final String TAG_ACTION = "ACTION_DATA_AVAILABLE";
+    private static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
     private RecyclerView rvMissedCall;
     private MissedCallAdapter adapter;
+    PhoneStateReceiver phoneStateReceiver;
+    private TextView txtNoCallLogs;
     TelephonyManager telephonyManager;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -32,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         rvMissedCall = findViewById(R.id.rv_call_list);
+        txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
 
         adapter = new MissedCallAdapter(new ArrayList<String>());
         rvMissedCall.setAdapter(adapter);
@@ -47,8 +55,26 @@ public class MainActivity extends AppCompatActivity {
                 showToast("Can't make calls");
             }
         }
+
+        phoneStateReceiver = new PhoneStateReceiver() {
+            @RequiresApi(api = Build.VERSION_CODES.P)
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                super.onReceive(context, intent);
+                final String action = intent.getAction();
+                if (action.equals(TAG_ACTION)) {
+                    String number = intent.getStringExtra("missedCallNumber");
+                    showEmptyListMessage();
+                    adapter.addItems(number);
+                    txtNoCallLogs.setVisibility(View.GONE);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        };
+        showEmptyListMessage();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private  boolean checkAndRequestPermissions() {
         int permissionReadPhoneState = ContextCompat.checkSelfPermission(this,Manifest.permission.READ_PHONE_STATE);
         int permissionAnswerPhoneCalls = ContextCompat.checkSelfPermission(this, Manifest.permission.ANSWER_PHONE_CALLS);
@@ -74,5 +100,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void showToast(String message){
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(phoneStateReceiver, new IntentFilter(TAG_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(phoneStateReceiver);
+    }
+
+    private void showEmptyListMessage() {
+        if (adapter.getItemCount() == 0) {
+            txtNoCallLogs.setVisibility(View.VISIBLE);
+        } else {
+            txtNoCallLogs.setVisibility(View.GONE);
+        }
     }
 }

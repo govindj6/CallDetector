@@ -7,13 +7,15 @@ import android.os.Build;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
+
 import androidx.annotation.RequiresApi;
+
 import java.util.Objects;
 
 public class PhoneStateReceiver extends BroadcastReceiver {
 
-    private final String TAG_INCOMING_CALL = "Incoming call";
+    private static final String TAG_INCOMING_CALL = "Incoming call";
+    private static final String TAG_ACTION = "ACTION_DATA_AVAILABLE";
 
     TelecomManager telecomManager;
     boolean callEnded;
@@ -27,15 +29,16 @@ public class PhoneStateReceiver extends BroadcastReceiver {
         try{
             if (Objects.equals(intent.getStringExtra(TelephonyManager.EXTRA_STATE), TelephonyManager.EXTRA_STATE_RINGING)){
                 String phoneNum= intent.getStringExtra("incoming_number");
+                Intent i = new Intent(TAG_ACTION);
                 if (telecomManager!=null){
                     callEnded = telecomManager.endCall();
                 }
                 if (phoneNum != null && callEnded){
+                    i.putExtra("missedCallNumber", phoneNum);
                     Log.d(TAG_INCOMING_CALL,phoneNum);
-                    Toast.makeText(context, TAG_INCOMING_CALL+":"+phoneNum, Toast.LENGTH_SHORT).show();
+                    context.sendBroadcast(i);
                 }
             }
-
         }catch (Exception e){
             e.printStackTrace();
         }
