@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
+    private RecyclerView rvMissedCall;
+    private MissedCallAdapter adapter;
     TelephonyManager telephonyManager;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -27,6 +30,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        rvMissedCall = findViewById(R.id.rv_call_list);
+
+        adapter = new MissedCallAdapter(new ArrayList<String>());
+        rvMissedCall.setAdapter(adapter);
 
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
