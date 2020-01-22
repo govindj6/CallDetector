@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     PhoneStateReceiver phoneStateReceiver;
     private TextView txtNoCallLogs;
     TelephonyManager telephonyManager;
+    Thread thread;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         rvMissedCall = findViewById(R.id.rv_call_list);
         txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
 
-        adapter = new MissedCallAdapter(new ArrayList<String>());
+        adapter = new MissedCallAdapter(new ArrayList<UserNumber>());
         rvMissedCall.setAdapter(adapter);
 
 
@@ -65,13 +66,14 @@ public class MainActivity extends AppCompatActivity {
                 if (action.equals(TAG_ACTION)) {
                     String number = intent.getStringExtra("missedCallNumber");
                     showEmptyListMessage();
-                    adapter.addItems(number);
+                    adapter.addItems(new UserNumber(number));
                     txtNoCallLogs.setVisibility(View.GONE);
                     adapter.notifyDataSetChanged();
                 }
             }
         };
         showEmptyListMessage();
+        updateList();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -120,5 +122,28 @@ public class MainActivity extends AppCompatActivity {
         } else {
             txtNoCallLogs.setVisibility(View.GONE);
         }
+    }
+
+    private void updateList() {
+        thread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    while (!thread.isInterrupted()) {
+                        Thread.sleep(1000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                adapter.refresh();
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        thread.start();
     }
 }

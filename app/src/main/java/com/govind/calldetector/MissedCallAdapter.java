@@ -12,10 +12,10 @@ import java.util.List;
 
 public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.ViewHolder> {
 
-    List<String> missedCallList;
+    List<UserNumber> userNumberList;
 
-    public MissedCallAdapter(List<String> missedCallList) {
-        this.missedCallList = missedCallList;
+    public MissedCallAdapter(List<UserNumber> userNumberList) {
+        this.userNumberList = userNumberList;
     }
 
     @NonNull
@@ -27,34 +27,43 @@ public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(missedCallList.get(position));
+        holder.bind(userNumberList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return missedCallList.size();
+        return userNumberList.size();
     }
 
-    public void replaceItems(List<String> newItems) {
-        missedCallList.clear();
-        missedCallList.addAll(newItems);
+    public void replaceItems(List<UserNumber> newItems) {
+        userNumberList.clear();
+        userNumberList.addAll(newItems);
         notifyDataSetChanged();
     }
 
     public void clearItems() {
-        missedCallList.clear();
+        userNumberList.clear();
         notifyDataSetChanged();
     }
 
-    public void addItems(List<String> newItems) {
-        int previousCount = missedCallList.size();
-        missedCallList.addAll(newItems);
+    public void addItems(List<UserNumber> newItems) {
+        int previousCount = userNumberList.size();
+        userNumberList.addAll(newItems);
         notifyItemRangeInserted(previousCount, newItems.size());
     }
 
-    public void addItems(String newItem) {
-        missedCallList.add(0, newItem);
+    public void addItems(UserNumber newItem) {
+        userNumberList.add(0, newItem);
         notifyDataSetChanged();
+    }
+
+    public void refresh() {
+        for (UserNumber userNumber : userNumberList) {
+            if (userNumber.isExpired()) {
+                userNumberList.remove(userNumber);
+                notifyDataSetChanged();
+            }
+        }
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -67,8 +76,8 @@ public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.Vi
             txtNumber = itemView.findViewById(R.id.txt_number);
         }
 
-        public void bind(final String missedCall) {
-            txtNumber.setText(missedCall);
+        public void bind(final UserNumber number) {
+            txtNumber.setText(number.getNumber());
         }
     }
 }
