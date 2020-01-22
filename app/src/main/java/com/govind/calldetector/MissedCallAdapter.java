@@ -8,11 +8,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.ViewHolder> {
 
     List<UserNumber> userNumberList;
+    List<UserNumber> numberToRemove;
 
     public MissedCallAdapter(List<UserNumber> userNumberList) {
         this.userNumberList = userNumberList;
@@ -58,11 +60,13 @@ public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.Vi
     }
 
     public void refresh() {
+        numberToRemove = new ArrayList<>();
         for (UserNumber userNumber : userNumberList) {
             if (userNumber.isExpired()) {
-                userNumberList.remove(userNumber);
-                notifyDataSetChanged();
+                numberToRemove.add(userNumber);
             }
+            userNumberList.removeAll(numberToRemove);
+            notifyDataSetChanged();
         }
     }
 

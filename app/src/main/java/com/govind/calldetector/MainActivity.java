@@ -20,18 +20,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG_ACTION = "ACTION_DATA_AVAILABLE";
     private static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
+    private static final long TIME_TO_REFRESH_LIST = 1000;
 
     private RecyclerView rvMissedCall;
     private MissedCallAdapter adapter;
     PhoneStateReceiver phoneStateReceiver;
     private TextView txtNoCallLogs;
     TelephonyManager telephonyManager;
-    Thread thread;
+    private Timer timer;
+    private TimerTask timerTask;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -41,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         rvMissedCall = findViewById(R.id.rv_call_list);
         txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
+        timer = new Timer();
 
         adapter = new MissedCallAdapter(new ArrayList<UserNumber>());
         rvMissedCall.setAdapter(adapter);
@@ -73,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         showEmptyListMessage();
-        updateList();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -107,12 +111,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startTimer();
         registerReceiver(phoneStateReceiver, new IntentFilter(TAG_ACTION));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        stopTimer();
         unregisterReceiver(phoneStateReceiver);
     }
 
@@ -124,26 +130,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateList() {
-        thread = new Thread() {
-
+    private TimerTask getTimerTask() {
+        return new TimerTask() {
             @Override
             public void run() {
-                try {
-                    while (!thread.isInterrupted()) {
-                        Thread.sleep(1000);
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                adapter.refresh();
-                            }
-                        });
-                    }
-                } catch (InterruptedException e) {
-                }
+                runOnUiThread(() -> adapter.refresh());
             }
         };
+    }
 
-        thread.start();
+    private void startTimer() {
+        timerTask = getTimerTask();
+        timer.schedule(timerTask, 0, TIME_TO_REFRESH_LIST);
+    }
+
+    private void stopTimer() {
+        timer.cancel();
+        timer.purge();
     }
 }
