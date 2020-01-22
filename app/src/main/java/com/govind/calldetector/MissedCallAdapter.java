@@ -53,7 +53,7 @@ public class MissedCallAdapter extends RecyclerView.Adapter<MissedCallAdapter.Vi
     }
 
     public void addItems(String newItem) {
-        missedCallList.add(newItem);
+        missedCallList.add(0, newItem);
         notifyDataSetChanged();
     }
 

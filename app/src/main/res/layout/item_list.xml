@@ -12,9 +12,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:letterSpacing="0.10"
+        android:letterSpacing="0.15"
         android:textAlignment="center"
-        android:textSize="18sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         tools:text="8871784545" />
 
