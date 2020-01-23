@@ -31,11 +31,11 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView rvMissedCall;
     private MissedCallAdapter adapter;
+    private TextView txtPhoneNumber;
     PhoneStateReceiver phoneStateReceiver;
     private TextView txtNoCallLogs;
     TelephonyManager telephonyManager;
     private Timer timer;
-    private TimerTask timerTask;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         rvMissedCall = findViewById(R.id.rv_call_list);
         txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
+        txtPhoneNumber = findViewById(R.id.txt_phone_number);
         timer = new Timer();
 
         adapter = new MissedCallAdapter(new ArrayList<UserNumber>());
@@ -53,13 +54,14 @@ public class MainActivity extends AppCompatActivity {
 
         telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
-        if(checkAndRequestPermissions()) {
-            if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT){
+        if (checkAndRequestPermissions()) {
+            if (telephonyManager.getSimState() == TelephonyManager.SIM_STATE_ABSENT) {
                 showToast("SIM not available");
             }
-            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)){
+            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
                 showToast("Can't make calls");
             }
+            startTimer();
         }
 
         phoneStateReceiver = new PhoneStateReceiver() {
@@ -82,12 +84,20 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private  boolean checkAndRequestPermissions() {
-        int permissionReadPhoneState = ContextCompat.checkSelfPermission(this,Manifest.permission.READ_PHONE_STATE);
+        int permissionReadPhoneNumber = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_NUMBERS);
+        int permissionReadSms = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
+        int permissionReadPhoneState = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
         int permissionAnswerPhoneCalls = ContextCompat.checkSelfPermission(this, Manifest.permission.ANSWER_PHONE_CALLS);
         int permissionReadCallLogs = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG);
 
         List<String> listPermissionsNeeded = new ArrayList<>();
 
+        if (permissionReadPhoneNumber != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_PHONE_NUMBERS);
+        }
+        if (permissionReadSms != PackageManager.PERMISSION_GRANTED) {
+            listPermissionsNeeded.add(Manifest.permission.READ_SMS);
+        }
         if (permissionReadPhoneState != PackageManager.PERMISSION_GRANTED) {
             listPermissionsNeeded.add(Manifest.permission.READ_PHONE_STATE);
         }
@@ -111,8 +121,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        startTimer();
         registerReceiver(phoneStateReceiver, new IntentFilter(TAG_ACTION));
+        txtPhoneNumber.setText(getPhoneNumber());
     }
 
     @Override
@@ -140,12 +150,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startTimer() {
-        timerTask = getTimerTask();
+        TimerTask timerTask = getTimerTask();
         timer.schedule(timerTask, 0, TIME_TO_REFRESH_LIST);
     }
 
     private void stopTimer() {
         timer.cancel();
         timer.purge();
+    }
+
+    private String getPhoneNumber() {
+        String phoneNumber = "";
+        if (checkSelfPermission(Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            showToast("Don't have permissions");
+        } else {
+            try {
+                //phoneNumber = PhoneNumberUtils.formatNumber(telephonyManager.getLine1Number(),"+91");
+                phoneNumber = telephonyManager.getLine1Number();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return phoneNumber;
     }
 }
