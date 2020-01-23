@@ -8,11 +8,19 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -48,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         txtPhoneNumber = findViewById(R.id.txt_phone_number);
         timer = new Timer();
 
-        adapter = new MissedCallAdapter(new ArrayList<UserNumber>());
+        adapter = new MissedCallAdapter(new ArrayList<>());
         rvMissedCall.setAdapter(adapter);
 
 
@@ -172,5 +180,39 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return phoneNumber;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.my_option_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.set_calling_number) {
+            enterNumberDialog();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void enterNumberDialog() {
+        LinearLayout dialogLayout = new LinearLayout(this);
+        dialogLayout.setPadding(30, 30, 30, 30);
+        dialogLayout.setOrientation(LinearLayout.VERTICAL);
+        final EditText edtPhone = new EditText(this);
+        edtPhone.setInputType(InputType.TYPE_CLASS_PHONE);
+        edtPhone.setHint("Enter number");
+
+        dialogLayout.addView(edtPhone);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Set calling number")
+                .setView(dialogLayout)
+                .setPositiveButton("Set", (dialogInterface, i) -> showToast(edtPhone.getText().toString()))
+                .setNegativeButton("Cancel", (dialog1, which) -> dialog1.dismiss())
+                .create();
+
+        dialog.show();
     }
 }

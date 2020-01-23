@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CallDetector</string>
+    <string name="set_calling_number">Set calling number</string>
 </resources>
