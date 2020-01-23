@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.view.Menu;
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -173,13 +175,12 @@ public class MainActivity extends AppCompatActivity {
             showToast("Don't have permissions");
         } else {
             try {
-                //phoneNumber = PhoneNumberUtils.formatNumber(telephonyManager.getLine1Number(),"+91");
                 phoneNumber = telephonyManager.getLine1Number();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return phoneNumber;
+        return PhoneNumberUtils.formatNumber(phoneNumber, Locale.getDefault().getCountry());
     }
 
     @Override
