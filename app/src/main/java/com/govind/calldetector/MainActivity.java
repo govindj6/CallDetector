@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         rvMissedCall = findViewById(R.id.rv_call_list);
         txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
         txtPhoneNumber = findViewById(R.id.txt_phone_number);
-        timer = new Timer();
 
         adapter = new MissedCallAdapter(new ArrayList<>());
         rvMissedCall.setAdapter(adapter);
@@ -69,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
             if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
                 showToast("Can't make calls");
             }
-            startTimer();
         }
 
         phoneStateReceiver = new PhoneStateReceiver() {
@@ -129,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        startTimer();
         registerReceiver(phoneStateReceiver, new IntentFilter(TAG_ACTION));
         txtPhoneNumber.setText(getPhoneNumber());
     }
@@ -159,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startTimer() {
         TimerTask timerTask = getTimerTask();
+        timer = new Timer();
         timer.schedule(timerTask, 0, TIME_TO_REFRESH_LIST);
     }
 
