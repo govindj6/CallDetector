@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,6 +37,8 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG_ACTION = "ACTION_DATA_AVAILABLE";
+    private static final String SHARED_PREFS = "sharedPrefs";
+    private static final String KEY_PHONE_NUMBER = "phoneNumber";
     private static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     private static final long TIME_TO_REFRESH_LIST = 1000;
 
@@ -46,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView txtNoCallLogs;
     TelephonyManager telephonyManager;
     private Timer timer;
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
@@ -56,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         rvMissedCall = findViewById(R.id.rv_call_list);
         txtNoCallLogs = findViewById(R.id.txt_no_call_logs);
         txtPhoneNumber = findViewById(R.id.txt_phone_number);
+
+        preferences = this.getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+        editor = preferences.edit();
 
         adapter = new MissedCallAdapter(new ArrayList<>());
         rvMissedCall.setAdapter(adapter);
@@ -131,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         startTimer();
         registerReceiver(phoneStateReceiver, new IntentFilter(TAG_ACTION));
-        txtPhoneNumber.setText(getPhoneNumber());
+        txtPhoneNumber.setText(getNumberFromPreference().length() != 0 ? getNumberFromPreference() : getPhoneNumber());
     }
 
     @Override
@@ -210,10 +218,23 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Set calling number")
                 .setView(dialogLayout)
-                .setPositiveButton("Set", (dialogInterface, i) -> showToast(edtPhone.getText().toString()))
+                .setPositiveButton("Set", (dialogInterface, i) -> {
+
+                    if (edtPhone.getText().toString().trim().length() != 0) {
+                        editor.putString(KEY_PHONE_NUMBER, edtPhone.getText().toString());
+                        editor.apply();
+                        showToast("Saved");
+                    } else {
+                        showToast("Please enter proper phone number");
+                    }
+                })
                 .setNegativeButton("Cancel", (dialog1, which) -> dialog1.dismiss())
                 .create();
 
         dialog.show();
+    }
+
+    private String getNumberFromPreference() {
+        return preferences.getString(KEY_PHONE_NUMBER, "");
     }
 }
